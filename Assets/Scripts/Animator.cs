@@ -9,6 +9,8 @@ public class Animator : MonoBehaviour
     [SerializeField] private LevelGenerator gen;
     [SerializeField] private Image restartScreen;
     private Text taskText;
+    
+    // Анимация при старте (Bounce ячейки и Fade текст)
     public void FirstAnimation()
     {
         Transform tmp;
@@ -21,15 +23,16 @@ public class Animator : MonoBehaviour
         }
         
         taskText=gen.TaskText;
-
         taskText.DOFade(1f,1f).From(0f).SetDelay(1f);
     }
 
+    // Затемнение экрана(FadeIn) и кнопка рестарта
     public void GameEndsAnimation()
     {   
         restartScreen.GetComponent<CanvasGroup>().DOFade(1f,1f).From(0f);
     }
 
+    // FadeOut от предыдущего
     public void NewGameAnimation()
     {
         restartScreen.GetComponent<CanvasGroup>().DOFade(0f,1f).From(1f);

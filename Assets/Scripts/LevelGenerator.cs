@@ -12,6 +12,7 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] private LevelConfig levelConfig;   
     [SerializeField] private GameObject cellPrefab;
     [SerializeField] private Text taskText;
+
     public Text TaskText
     {
         get
@@ -19,9 +20,11 @@ public class LevelGenerator : MonoBehaviour
             return taskText;
         }
     }
+
     [SerializeField] private List<CardBundleData> cardTypes;
     [SerializeField] private UnityEvent gameStarts;
     [SerializeField] private UnityEvent levelEnd;
+
     public UnityEvent LevelEnd
     {
         get
@@ -29,6 +32,7 @@ public class LevelGenerator : MonoBehaviour
             return levelEnd;
         }
     }
+
     [SerializeField] private UnityEvent gameEnds;
     private List<GameObject> cells;
     public List<GameObject> Cells
@@ -45,7 +49,6 @@ public class LevelGenerator : MonoBehaviour
 
     private List<string> prevAnswers;
 
-    // Загенерировать уровень
     void Start()
     {
         prevAnswers=new List<string>();
@@ -56,27 +59,28 @@ public class LevelGenerator : MonoBehaviour
 
     public void GenerateLevel()
     {   
+        // Проверка на окончание игры
         if (currentLevel==levelCount)
         {
             gameEnds.Invoke();
             return;
         }
-        // Берём строки и столбцы для ячеек из конфигурации уровня
+
+        // Строки и столбцы для ячеек из конфигурации уровня
         int n=levelConfig.Cols[currentLevel];
         int m=levelConfig.Rows[currentLevel];
         
         // Количество ячеек, которые необходимо создать для уровня
-        // Если число отрицательное, то для уровня требуется меньше ячеек, чем создано, поэтому необходимо деактивировать лишние
         int countToAdd=n*m-Cells.Count;
 
-        // Создание недостающих (если нужно)
+        // Создание недостающих (если нужно, т.е. countToAdd>0)
         for(int i=0; i<countToAdd; i++)
             Cells.Add(Instantiate(cellPrefab, new Vector3(0f,0f,0f), Quaternion.identity));
 
-        // Располагаем ячейки по сетке NxM
+        // Расположение ячеек по сетке NxM
         PositionAllCells(n,m);
 
-        // Переприсваиваем спрайты и текст с запросом
+        // Переприсвоение спрайтов и текста с запросом
         SpriteAllCells(n,m);
 
         currentLevel++;    
@@ -89,6 +93,8 @@ public class LevelGenerator : MonoBehaviour
         
         x=1-n;
         y=m-1;
+
+        // Задание положение ячеек
         for(int i=0;i<m;i++)
         {
             for(int j=0;j<n;j++)
@@ -103,10 +109,11 @@ public class LevelGenerator : MonoBehaviour
             y-=2f;
         }
     
-        // Отключаем неиспользуемые ячейки
+        // Отключение неиспользуемыых ячеек
         for(int i=m*n; i<Cells.Count-1; i++)
             Cells[i].SetActive(false);
     }
+
     void SpriteAllCells(int n, int m)
     {
         Cell tmp;
@@ -118,10 +125,10 @@ public class LevelGenerator : MonoBehaviour
         // Номер карточки, которая будет ответом
         int correctCardIndex=Random.Range(0,n*m);
 
-        // Забираем все карточки вариации
+        // Получение всех карточек вариации
         var lst = new List<CardData>(cardTypes[levelType].CardData);
         
-        // Заполняем ячейки случайными данными
+        // Заполнение ячейки случайными данными
         for(int i=0;i<n*m;i++)
         {
             tmp=Cells[i].GetComponent<Cell>();            
@@ -133,17 +140,22 @@ public class LevelGenerator : MonoBehaviour
         
         tmp=Cells[correctCardIndex].GetComponent<Cell>();
 
+        // Выбор случайного значения, которого ещё не было на прошлых уровнях
         while(prevAnswers.Contains(tmp.CurrentId))
             tmp.SetInfo(lst[Random.Range(0,lst.Count)]);
 
         tmp.isCorrect=true;
         
+        // Смена текста задания
         TaskText.text="Find "+tmp.CurrentId;
+
+        // Пополнение списка прошлых ответов
         prevAnswers.Add(tmp.CurrentId);
 
         lst.Clear();
     }
 
+    // Деактивация всех ячеек (в конце игры)
     public void DeactivateAllCells()
     {
         foreach (var cell in Cells)
@@ -152,6 +164,7 @@ public class LevelGenerator : MonoBehaviour
         }
     }
 
+    // Очищение/инициализация запуск события начала игры
     public void NewGame()
     {
         prevAnswers.Clear();

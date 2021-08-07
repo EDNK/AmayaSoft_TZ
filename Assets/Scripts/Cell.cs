@@ -20,6 +20,7 @@ public class Cell : MonoBehaviour
     
     public bool isCorrect {set; get;}
 
+    // Заполнение ин-фы карточки
     public void SetInfo(CardData cd)
     {
         currentId=cd.Identifier;
@@ -28,10 +29,12 @@ public class Cell : MonoBehaviour
         isCorrect=false;
     }
     
+    // При нажатии на карточку вызов события
     private void OnMouseDown() {
         ClickEvent.Invoke();
     }
 
+    // Развилка в зависимости от ячейки(верная/неверная)
     public void OnClick()
     {
         if (isCorrect)
@@ -40,18 +43,20 @@ public class Cell : MonoBehaviour
             WrongChoiceAnimation();
     }
 
+    // Анимация неверной ячейки
     private void WrongChoiceAnimation()
     {
         CellData.DOLocalMoveX(1f,0.5f).SetEase(animCurveX);
         CellData.DOLocalMoveY(1f,0.5f).SetEase(animCurveY);
     }
 
+    // Анимация верной ячейки
     private void RightChoiceAnimation()
     {
-        
         StartCoroutine(RightChoiceCoroutine());
     }
 
+    // Корутина с анимацией верного выбора и запуск события конца уровня 
     IEnumerator RightChoiceCoroutine()
     {   
         starEffect.Play(true);
@@ -59,6 +64,5 @@ public class Cell : MonoBehaviour
         yield return new WaitForSeconds(2f);
         DOTween.KillAll();
         gen.LevelEnd.Invoke();
-        
     }
 }
